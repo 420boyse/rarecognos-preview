@@ -8,6 +8,7 @@ import { NFTDeploy } from "@/components/nft-deploy";
 import { MarketHeader } from "@/components/market-header";
 import { CreatorDashboard, NFTDropMint } from "@/components/nft-drops";
 import { MarketHero } from "@/components/market-hero";
+import { FanStackNFT } from "@/components/fan-stack-nft";
 import { isAddress, type Address } from "viem";
 export const Route = createFileRoute("/")({ component: Home });
 function Home() {
@@ -58,6 +59,13 @@ function Home() {
         />
         {view === "Explore" && (
           <>
+            <FanStackNFT
+              items={works}
+              onSelectWork={(id) => {
+                const work = works.find((work) => work.id === id);
+                if (work) setActive(work);
+              }}
+            />
             <section id="studio" className="studio-section" aria-labelledby="studio-title">
               <div className="section-heading">
                 <div>

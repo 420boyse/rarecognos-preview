@@ -39,10 +39,6 @@ export function MarketHero({
     <section className="market-hero" aria-labelledby="hero-title">
       <div className="hero-stage">
         <div className="hero-content">
-          <span className="section-eyebrow hero-eyebrow">
-            <span />
-            Art meets the on-chain world
-          </span>
           <h1 id="hero-title" aria-label="An eye for the rare.">
             An eye for
             <br />

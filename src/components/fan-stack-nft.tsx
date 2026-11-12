@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 
 type NFTCard = {
   id: string;
@@ -67,6 +68,7 @@ export function FanStackNFT({
   const sizeRef = useRef(CARD_SIZE_BASE);
   const countRef = useRef(cards.length);
   const centeredRef = useRef(0);
+  const reducedMotion = useRef(false);
 
   const [cardSize, setCardSize] = useState(CARD_SIZE_BASE);
   const [centered, setCentered] = useState(0);
@@ -75,6 +77,12 @@ export function FanStackNFT({
   countRef.current = cards.length;
 
   useEffect(() => {
+    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const updateMotion = () => {
+      reducedMotion.current = motion.matches;
+    };
+    updateMotion();
+    motion.addEventListener("change", updateMotion);
     const paint = () => {
       const n = countRef.current;
       const size = sizeRef.current;
@@ -85,7 +93,7 @@ export function FanStackNFT({
         const el = cardRefs.current[i];
         if (!el) continue;
         let offset = i - scrollPos.current;
-        offset = ((offset + half) % n + n) % n - half;
+        offset = ((((offset + half) % n) + n) % n) - half;
         const abs = Math.abs(offset);
         const room = half - abs;
         const fade = room >= fadeBand ? 1 : Math.max(0, room / fadeBand);
@@ -111,6 +119,10 @@ export function FanStackNFT({
     let raf = 0;
     const loop = () => {
       if (!isDragging.current) {
+        if (reducedMotion.current) {
+          velocity.current = 0;
+          scrollPos.current = Math.round(scrollPos.current);
+        }
         scrollPos.current += velocity.current;
         velocity.current *= FRICTION;
         if (Math.abs(velocity.current) < 0.08) {
@@ -130,7 +142,10 @@ export function FanStackNFT({
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
-    return () => cancelAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(raf);
+      motion.removeEventListener("change", updateMotion);
+    };
   }, []);
 
   useEffect(() => {
@@ -140,7 +155,7 @@ export function FanStackNFT({
       if (Math.abs(event.deltaX) <= Math.abs(event.deltaY)) return;
       event.preventDefault();
       const spread = Math.max(1, sizeRef.current * FAN_SPREAD);
-      scrollPos.current += event.deltaX / spread;
+      scrollPos.current += reducedMotion.current ? Math.sign(event.deltaX) : event.deltaX / spread;
       velocity.current = 0;
     };
     el.addEventListener("wheel", onWheel, { passive: false });
@@ -160,7 +175,12 @@ export function FanStackNFT({
     isDragging.current = true;
     axisLocked.current = null;
     velocity.current = 0;
-    dragStart.current = { x: e.clientX, y: e.clientY, lastX: e.clientX, lastTime: performance.now() };
+    dragStart.current = {
+      x: e.clientX,
+      y: e.clientY,
+      lastX: e.clientX,
+      lastTime: performance.now(),
+    };
   };
 
   const onPointerMove = (e: React.PointerEvent) => {
@@ -198,13 +218,38 @@ export function FanStackNFT({
     axisLocked.current = null;
   };
 
+  const move = (direction: number) => {
+    velocity.current = 0;
+    scrollPos.current = Math.round(scrollPos.current) + direction;
+  };
+
   const current = cards[centered] || cards[0];
 
   return (
-    <section className="fan-section">
+    <section className="fan-section" aria-label="Interactive studio gallery">
+      <div className="fan-toolbar">
+        <span>Drag to explore · Studio previews</span>
+        <div className="gallery-controls">
+          <button type="button" aria-label="Previous studio artwork" onClick={() => move(-1)}>
+            <ArrowLeft size={18} aria-hidden="true" />
+          </button>
+          <button type="button" aria-label="Next studio artwork" onClick={() => move(1)}>
+            <ArrowRight size={18} aria-hidden="true" />
+          </button>
+        </div>
+      </div>
       <div
         ref={containerRef}
         className="fan-container"
+        role="group"
+        aria-roledescription="carousel"
+        aria-label="Studio artworks. Drag or use left and right arrow keys."
+        tabIndex={0}
+        onKeyDown={(event) => {
+          if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
+          event.preventDefault();
+          move(event.key === "ArrowLeft" ? -1 : 1);
+        }}
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
@@ -226,7 +271,7 @@ export function FanStackNFT({
             }}
           >
             <div data-image className="fan-card-image">
-              <img src={card.image} alt={card.title} draggable={false} />
+              <img src={card.image} alt={card.title} draggable={false} loading="lazy" />
               <div data-overlay className="fan-card-overlay" />
             </div>
             <div data-ghost className="fan-card-ghost" />
@@ -237,7 +282,9 @@ export function FanStackNFT({
 
       <div className="fan-detail">
         <div className="fan-meta">{current?.medium || "Digital Art"} · RareCognos</div>
-        <h3 className="fan-title">{current?.title || "Untitled"}</h3>
+        <h3 className="fan-title" aria-live="polite" aria-atomic="true">
+          {current?.title || "Untitled"}
+        </h3>
         {current?.price && <div className="fan-price">{current.price}</div>}
         <div className="fan-actions">
           <button
@@ -254,10 +301,10 @@ export function FanStackNFT({
             className="fan-secondary"
             onClick={() => {
               const el = document.getElementById("studio");
-              if (el) el.scrollIntoView({ behavior: "smooth" });
+              if (el) el.scrollIntoView({ behavior: reducedMotion.current ? "instant" : "smooth" });
             }}
           >
-            Collect
+            View all works
           </button>
         </div>
       </div>
@@ -269,8 +316,19 @@ export function FanStackNFT({
           align-items: center;
           justify-content: center;
           padding: 28px 20px 64px;
-          background: radial-gradient(ellipse at center, rgba(59,91,255,0.08) 0%, transparent 60%), #050505;
+          background: radial-gradient(ellipse at center, rgb(59 91 255 / 0.06) 0%, transparent 60%), var(--color-bg);
           overflow-x: clip;
+        }
+        .fan-toolbar {
+          width: 100%;
+          max-width: 1100px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          margin-bottom: 20px;
+          font-size: 11px;
+          color: var(--color-muted);
         }
         .fan-container {
           position: relative;

@@ -60,18 +60,6 @@
   position: relative;
   z-index: 2;
 }
-.hero-eyebrow {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 30px;
-}
-.hero-eyebrow > span {
-  width: 6px;
-  height: 6px;
-  background: var(--color-cobalt);
-  border-radius: 50%;
-}
 .hero-content h1 {
   font-size: clamp(64px, 7.5vw, 112px);
   font-weight: 500;
@@ -407,10 +395,6 @@
   .hero-content h1 {
     font-size: clamp(56px, 8vw, 80px);
   }
-  .hero-eyebrow {
-    font-size: 8px;
-    letter-spacing: 0.12em;
-  }
   .hero-showcase {
     padding-inline: 8px;
   }
@@ -443,10 +427,6 @@
     padding-bottom: 28px;
     gap: 28px;
     min-height: 0;
-  }
-  .hero-eyebrow {
-    margin-bottom: 20px;
-    font-size: 9px;
   }
   .hero-content h1 {
     font-size: clamp(58px, 15vw, 86px);

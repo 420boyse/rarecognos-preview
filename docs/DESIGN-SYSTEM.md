@@ -16,7 +16,9 @@ RareCognos combines an art gallery identity with a LitVM testnet NFT marketplace
 
 Explore opens active listings, or the studio when the marketplace is confirmed empty or unconfigured. Loading and RPC failures remain distinct from empty results. Wallet connection remains in the persistent header. Creation, ownership, drop, and token views use compact headings and omit the studio/creator promotional sections.
 
-The duplicated fan gallery was removed from the homepage; its reusable component remains available. Studio cards use one responsive three/two/one-column grid.
+The original draggable fan gallery is part of the Explore experience, followed by the complete studio grid. Keep its inertial drag and horizontal trackpad interaction; vertical touch gestures remain page scrolls. Previous/next buttons and arrow keys provide alternatives to dragging. Reduced motion disables inertial settling. Studio previews remain distinct from listings.
+
+Keep copy concrete. The hero starts directly with “An eye for the rare.”; do not add a generic Web3 eyebrow or decorative status dot above it.
 
 ## Future marketplace work
 
