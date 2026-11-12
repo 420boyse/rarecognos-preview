@@ -158,7 +158,7 @@ export async function uploadPrepare(request: Request) {
     if (!body.id || typeof body.signature !== "string" || typeof body.file !== "string")
       return uploadJson(400, { error: "Missing image" }, origin);
     const ticket = unpack(body.id);
-    if (ticket.mac !== mac(ticket.message) || !ticket.expires || ticket.expires < Date.now())
+    if (!ticket.message || !ticket.payload || ticket.mac !== mac(ticket.message) || !ticket.expires || ticket.expires < Date.now())
       return uploadJson(401, { error: "Upload authorization expired or already used. Sign again." }, origin);
     const payload = JSON.parse(ticket.payload!) as {
       wallet: string;

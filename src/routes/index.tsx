@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowRight, ArrowUpRight, X } from "lucide-react";
+import { ArrowUpRight, X } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { EyeMark, Wordmark } from "@/components/wordmark";
 import { works, type Work } from "@/data/works";
@@ -7,7 +7,7 @@ import { type Availability, NFTMarket } from "@/components/nft-market";
 import { NFTDeploy } from "@/components/nft-deploy";
 import { MarketHeader } from "@/components/market-header";
 import { CreatorDashboard, NFTDropMint } from "@/components/nft-drops";
-import { FanStackNFT } from "@/components/fan-stack-nft";
+import { MarketHero } from "@/components/market-hero";
 import { isAddress, type Address } from "viem";
 export const Route = createFileRoute("/")({ component: Home });
 function Home() {
@@ -22,10 +22,10 @@ function Home() {
           : /^#drop\/0x[0-9a-fA-F]{40}$/.test(location.hash) && isAddress(location.hash.slice(6))
             ? "Drop:" + location.hash.slice(6)
             : location.hash === "#create" || location.hash === "#drops"
-            ? "Create"
-            : location.hash === "#my-nfts"
-              ? "My NFTs"
-              : "Explore",
+              ? "Create"
+              : location.hash === "#my-nfts"
+                ? "My NFTs"
+                : "Explore",
       );
     update();
     window.addEventListener("hashchange", update);
@@ -40,68 +40,11 @@ function Home() {
   return (
     <div id="top">
       <MarketHeader view={view} />
-      <main>
-        <section
-          className={`market-hero ${view !== "Explore" ? "market-hero--compact" : ""}`}
-          aria-labelledby="hero-title"
-        >
-          <img
-            className="hero-art"
-            src="/art/nocturne-hero.jpg"
-            alt="Nocturne, a blackened-chrome sculpture"
-            fetchPriority="high"
-          />
-          <div className="hero-content">
-            <h1 id="hero-title" aria-label="An eye for the rare.">
-              <span aria-hidden="true">
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "0ms" }}>A</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "35ms" }}>n</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "70ms" }}>&nbsp;</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "105ms" }}>e</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "140ms" }}>y</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "175ms" }}>e</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "210ms" }}>&nbsp;</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "245ms" }}>f</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "280ms" }}>o</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "315ms" }}>r</span></span>
-                <br />
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "350ms" }}>t</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "385ms" }}>h</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "420ms" }}>e</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "455ms" }}>&nbsp;</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "490ms" }}>r</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "525ms" }}>a</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "560ms" }}>r</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "595ms" }}>e</span></span>
-                <span className="letter-wrap"><span className="hero-letter-rise" style={{ animationDelay: "630ms" }}>.</span></span>
-              </span>
-            </h1>
-            <p>
-              Distinctive digital art.
-              <br />
-              Yours to discover, create, and collect.
-            </p>
-            <div className="hero-actions">
-              <a
-                className="primary-action"
-                href={
-                  availability === "empty" || availability === "unconfigured"
-                    ? "#studio"
-                    : "#explore"
-                }
-              >
-                Explore NFTs <ArrowRight size={18} />
-              </a>
-              <a className="secondary-action" href="#create">
-                Create NFT
-              </a>
-            </div>
-          </div>
-          <div className="hero-caption">
-            <span>Nocturne</span>
-            <span>Blackened chrome, 2026</span>
-          </div>
-        </section>
+      <a className="skip-link" href="#main-content">
+        Skip to content
+      </a>
+      <main id="main-content">
+        <MarketHero view={view} availability={availability} onPreview={setActive} />
         {view.startsWith("Drop:") && <NFTDropMint address={view.slice(5) as Address} />}
         {view === "Create" && <CreatorDashboard />}
         <NFTMarket
@@ -114,36 +57,51 @@ function Home() {
           }}
         />
         {view === "Explore" && (
-          <FanStackNFT
-            items={works.map((w) => ({
-              id: w.id,
-              title: w.title,
-              image: w.image,
-              medium: w.medium,
-              price: undefined,
-            }))}
-            onSelectWork={(id) => {
-              const found = works.find((w) => w.id === id);
-              if (found) setActive(found);
-            }}
-          />
+          <>
+            <section id="studio" className="studio-section" aria-labelledby="studio-title">
+              <div className="section-heading">
+                <div>
+                  <span className="section-eyebrow">The RareCognos perspective</span>
+                  <h2 id="studio-title">From the studio.</h2>
+                  <p>A study in form, texture, and the unexpected.</p>
+                </div>
+                <span className="studio-note">
+                  {works.length.toString().padStart(2, "0")} works · Studio previews, not sale
+                  listings
+                </span>
+              </div>
+              <ul className="studio-grid">
+                {works.map((work) => (
+                  <li key={work.id}>
+                    <WorkCard work={work} onOpen={() => setActive(work)} />
+                  </li>
+                ))}
+              </ul>
+            </section>
+            <section className="creator-invitation" aria-labelledby="creator-title">
+              <div>
+                <span className="section-eyebrow">For the ones who create</span>
+                <h2 id="creator-title">
+                  Your next work
+                  <br />
+                  belongs here.
+                </h2>
+              </div>
+              <div>
+                <p>
+                  Bring your digital artwork to RareCognos. Upload your image, mint to your wallet,
+                  and list it when you’re ready.
+                </p>
+                <a className="primary-action" href="#create">
+                  Create a work <ArrowUpRight size={18} aria-hidden="true" />
+                </a>
+                <span className="creator-note">
+                  Built on LiteForge testnet · Test currency only
+                </span>
+              </div>
+            </section>
+          </>
         )}
-        <section id="studio" className="studio-section" aria-labelledby="studio-title">
-          <div className="section-heading">
-            <div>
-              <h2 id="studio-title">Studio Collection</h2>
-              <p>Six works from the studio. A closer look, before you collect.</p>
-            </div>
-            <span className="studio-note">Studio previews · not sale listings</span>
-          </div>
-          <ul className="studio-grid">
-            {works.map((work) => (
-              <li key={work.id}>
-                <WorkCard work={work} onOpen={() => setActive(work)} />
-              </li>
-            ))}
-          </ul>
-        </section>
         <NFTDeploy />
       </main>
       <footer className="market-footer">
@@ -157,16 +115,8 @@ function Home() {
 }
 function WorkCard({ work, onOpen }: { work: Work; onOpen: () => void }) {
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      className="group relative flex h-full min-h-80 w-full flex-col overflow-hidden rounded-2xl border border-line bg-surface text-left md:min-h-[28rem]"
-    >
-      <img
-        src={work.image}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-      />
+    <button type="button" onClick={onOpen} className="studio-card group">
+      <img src={work.image} alt="" loading="lazy" className="studio-card-image" />
       <span className="absolute top-4 left-4 rounded-full border border-line bg-bg/70 px-3 py-1 text-xs tracking-wide text-fg backdrop-blur-sm">
         Studio work
       </span>
